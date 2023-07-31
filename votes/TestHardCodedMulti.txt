@@ -1,0 +1,15 @@
+{
+	"TotalVotes": 40,
+	"Winner": "Banana",
+	"Steps": [
+		{
+			"NoChoiceLeft": 0,
+			"CandidateResults": {
+				"Apple": 18,
+				"Banana": 37,
+				"Kiwi": 9,
+				"Orange": 17
+			}
+		}
+	]
+}

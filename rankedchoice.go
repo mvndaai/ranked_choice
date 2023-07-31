@@ -121,3 +121,26 @@ func (s Step) Lowest() (Candidate, error) {
 	}
 	return keys[0], nil
 }
+
+func (s Step) Highest() (Candidate, error) {
+	if len(s.CandidateResults) == 0 {
+		return "", fmt.Errorf("no candiates with votes")
+	}
+
+	keys := make([]Candidate, 0, len(s.CandidateResults))
+	for key := range s.CandidateResults {
+		keys = append(keys, key)
+	}
+
+	sort.SliceStable(keys, func(i, j int) bool {
+		return s.CandidateResults[keys[i]] > s.CandidateResults[keys[j]]
+	})
+
+	if len(keys) > 1 {
+		if s.CandidateResults[keys[0]] == s.CandidateResults[keys[1]] {
+			// This error don't not show for 3 way ties
+			return "", fmt.Errorf("tie between %v and %v", keys[0], keys[1])
+		}
+	}
+	return keys[0], nil
+}
