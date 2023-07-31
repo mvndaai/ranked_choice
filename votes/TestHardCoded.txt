@@ -1,0 +1,36 @@
+{
+	"TotalVotes": 40,
+	"Winner": "Banana",
+	"Steps": [
+		{
+			"NoChoiceLeft": 0,
+			"CandidateResults": {
+				"Apple": 11,
+				"Banana": 10,
+				"Kiwi": 9,
+				"Orange": 10
+			}
+		},
+		{
+			"NoChoiceLeft": 3,
+			"CandidateResults": {
+				"Apple": 11,
+				"Banana": 16,
+				"Orange": 10
+			}
+		},
+		{
+			"NoChoiceLeft": 3,
+			"CandidateResults": {
+				"Apple": 11,
+				"Banana": 26
+			}
+		},
+		{
+			"NoChoiceLeft": 3,
+			"CandidateResults": {
+				"Banana": 37
+			}
+		}
+	]
+}

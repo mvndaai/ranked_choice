@@ -1,11 +1,12 @@
 package rankedchoice
 
-import "log"
+import (
+	"fmt"
+	"log"
+	"sort"
+)
 
-type Candidate struct {
-	Name        string
-	Affiliation string
-}
+type Candidate string
 
 type Vote struct {
 	Choices []Candidate
@@ -16,21 +17,19 @@ type Step struct {
 	CandidateResults map[Candidate]int
 }
 
-//type
-
 type Result struct {
 	TotalVotes int
 	Winner     *Candidate
 	Steps      []Step
 }
 
-func CalculateDropLowest(votes []Vote) Result {
-	r := Result{}
+func CalculateDropLowest(votes []Vote) (Result, error) {
+	r := Result{TotalVotes: len(votes)}
 	lowest := map[Candidate]bool{}
 
 	// Unit we find a winner
-	for true {
-
+	for {
+		log.Println("starting step")
 		step := Step{
 			NoChoiceLeft:     0,
 			CandidateResults: map[Candidate]int{},
@@ -51,20 +50,27 @@ func CalculateDropLowest(votes []Vote) Result {
 			step.CandidateResults[c]++
 		}
 		r.Steps = append(r.Steps, step)
+		log.Println("step results", step)
 
 		winner, ok := step.Winner()
 		if ok {
+			log.Println("The winner is", winner)
 			r.Winner = &winner
 			break
 		}
 
+		low, err := step.Lowest()
+		if err != nil {
+			return r, err
+		}
+		lowest[low] = true
+
 		if len(votes) == step.NoChoiceLeft {
-			log.Println("No winner?")
-			break
+			return r, fmt.Errorf("no winner")
 		}
 	}
 
-	return r
+	return r, nil
 }
 
 func (v Vote) TopAvaliableChoice(removed map[Candidate]bool) (Candidate, bool) {
@@ -74,7 +80,7 @@ func (v Vote) TopAvaliableChoice(removed map[Candidate]bool) (Candidate, bool) {
 		}
 		return choice, true
 	}
-	return Candidate{}, false
+	return "", false
 }
 
 func (s Step) Winner() (Candidate, bool) {
@@ -84,10 +90,34 @@ func (s Step) Winner() (Candidate, bool) {
 	}
 
 	for candidate, votes := range s.CandidateResults {
-		percent := votes / total
+		percent := int(float64(votes/total) * 100)
+		log.Println("candiate %", candidate, votes, total, percent)
 		if percent > 50 {
 			return candidate, true
 		}
 	}
-	return Candidate{}, false
+	return "", false
+}
+
+func (s Step) Lowest() (Candidate, error) {
+	if len(s.CandidateResults) == 0 {
+		return "", fmt.Errorf("no candiates with votes")
+	}
+
+	keys := make([]Candidate, 0, len(s.CandidateResults))
+	for key := range s.CandidateResults {
+		keys = append(keys, key)
+	}
+
+	sort.SliceStable(keys, func(i, j int) bool {
+		return s.CandidateResults[keys[i]] < s.CandidateResults[keys[j]]
+	})
+
+	if len(keys) > 1 {
+		if s.CandidateResults[keys[0]] == s.CandidateResults[keys[1]] {
+			// This error don't not show for 3 way ties
+			return "", fmt.Errorf("tie between %v and %v", keys[0], keys[1])
+		}
+	}
+	return keys[0], nil
 }
